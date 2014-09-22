@@ -1,0 +1,12 @@
+test_ldap_src:
+  id: 6
+  type: AuthSourceLdap
+  name: 'TestLdap'
+  host: '127.0.0.1'
+  port: 389
+  base_dn: 'DC=example,DC=com'
+  attr_login: uid
+  attr_firstname: givenName
+  attr_lastname: sn
+  attr_mail: mail
+  onthefly_register: false
