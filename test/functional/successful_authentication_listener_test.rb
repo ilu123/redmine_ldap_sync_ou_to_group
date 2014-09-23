@@ -1,4 +1,5 @@
-# Load the Redmine helper
+# Load the Redmine helpers
+require File.expand_path(File.dirname(__FILE__) + '/../helpers/auth_source_ldap_dummy')
 require File.expand_path(File.dirname(__FILE__) + '/../../test/test_helper')
 ActiveRecord::Fixtures.create_fixtures(File.dirname(__FILE__) + '/../fixtures/',
                                        [:auth_sources])
@@ -15,7 +16,8 @@ class SuccessfulAuthenticationListenerTest < ActiveSupport::TestCase
             :enabled_modules
 
   def setup
-    @auth_listener = SuccessfulAuthenticationListener.new
+    @auth_listener = SuccessfulAuthenticationListener.get_hooks_instance
+    AuthSourceLdap.send(:include, AuthSourceLdapDummy)
   end
 
   def test_parse_ou_from_dn
@@ -30,11 +32,17 @@ class SuccessfulAuthenticationListenerTest < ActiveSupport::TestCase
     assert_equal("tst_grp_001", Group.find_by_lastname("tst_grp_001").lastname)
     assert_equal(6, Group.find_by_lastname("tst_grp_001").auth_source_id)
 
-    @auth_listener.try_to_create_group_from_ou(Group.find_by_lastname("A Team"), AuthSourceLdap.find(6))
-    assert_equal(1, Group.find_by_lastname("A Team").auth_source_id)
+    @auth_listener.try_to_create_group_from_ou("A Team", AuthSourceLdap.find(6))
+    assert_equal(nil, Group.find_by_lastname("A Team").auth_source_id)
+  end
 
-    all_grps = Group.all
-    @auth_listener.try_to_create_group_from_ou(nil, AuthSourceLdap.find(1))
-    assert_equal(all_grps, Group.all)
+  def test_sync_ou_to_group
+    @auth_listener.sync_ou_to_group(User.find(2), ["ou1", "ou2", nil], AuthSourceLdap.find(6))
+    assert_equal(["ou1", "ou2"], Group.last(2).map{|g|g.name})
+    assert_equal(["ou1", "ou2"], User.find(2).groups.map{|g|g.name})
+  end
+
+  def test_controller_account_success_authentication_after
+    @auth_listener.controller_account_success_authentication_after(:user => User.find(2))
   end
 end
