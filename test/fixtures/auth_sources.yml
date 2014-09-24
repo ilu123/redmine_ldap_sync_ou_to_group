@@ -1,7 +1,7 @@
 test_ldap_src:
   id: 6
   type: AuthSourceLdap
-  name: 'TestLdap'
+  name: 'TestAuthSourceLdap'
   host: '127.0.0.1'
   port: 389
   base_dn: 'DC=example,DC=com'
