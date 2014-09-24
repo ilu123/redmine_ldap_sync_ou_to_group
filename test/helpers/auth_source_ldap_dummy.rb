@@ -10,7 +10,7 @@ module AuthSourceLdapDummy
   module InstanceMethods
     def ignore_ldap_account_get_user_dn_dummy(str)
       return nil if str.eql? "invalid_user"
-      "CN=#{str},OU=ou1,OU=ou2,ou=,DC=example,DC=com"
+      {:dn => "CN=#{str},OU=ou1,OU=ou2,ou=,DC=example,DC=com"}
     end
   end
 end
